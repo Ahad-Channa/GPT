@@ -1685,6 +1685,234 @@ router.post('/referral-test-commission/:userId', requirePermission('manage_users
 // OVERVIEW & NOTIFICATIONS
 // ----------------------------------------------------
 
+const ACTIVITY_PERIOD_DAYS = {
+  '7d': 7,
+  '30d': 30,
+};
+
+const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+function resolveActivityRange(period = '7d', startDate, endDate) {
+  const now = new Date();
+  const bucketKeys = [];
+
+  if (period === '1d') {
+    const windowEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), 59, 59, 999));
+    const windowStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours() - 23, 0, 0, 0));
+    for (let i = 0; i < 24; i += 1) {
+      const d = new Date(windowStart.getTime() + i * 3600000);
+      bucketKeys.push(d.toISOString().slice(0, 13));
+    }
+    return { windowStart, windowEnd, bucketKeys, format: '%Y-%m-%dT%H', granularity: 'hour' };
+  }
+
+  if (period === '1y') {
+    const windowStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1, 0, 0, 0, 0));
+    const windowEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+    for (let i = 0; i < 12; i += 1) {
+      const d = new Date(Date.UTC(windowStart.getUTCFullYear(), windowStart.getUTCMonth() + i, 1));
+      bucketKeys.push(d.toISOString().slice(0, 7));
+    }
+    return { windowStart, windowEnd, bucketKeys, format: '%Y-%m', granularity: 'month' };
+  }
+
+  if (period === 'custom') {
+    if (!DATE_ONLY_REGEX.test(startDate || '') || !DATE_ONLY_REGEX.test(endDate || '')) {
+      return { error: 'Please provide valid startDate and endDate (YYYY-MM-DD).' };
+    }
+    const parsedStart = new Date(`${startDate}T00:00:00.000Z`);
+    const parsedEnd = new Date(`${endDate}T23:59:59.999Z`);
+    if (Number.isNaN(parsedStart.getTime()) || Number.isNaN(parsedEnd.getTime())) {
+      return { error: 'Invalid custom date range.' };
+    }
+
+    const windowStart = parsedStart <= parsedEnd ? parsedStart : new Date(`${endDate}T00:00:00.000Z`);
+    const windowEnd = parsedStart <= parsedEnd ? parsedEnd : new Date(`${startDate}T23:59:59.999Z`);
+    const diffDays = Math.floor((windowEnd.getTime() - windowStart.getTime()) / 86400000) + 1;
+
+    if (diffDays <= 1) {
+      for (let h = 0; h < 24; h += 1) {
+        const d = new Date(windowStart.getTime() + h * 3600000);
+        bucketKeys.push(d.toISOString().slice(0, 13));
+      }
+      return { windowStart, windowEnd, bucketKeys, format: '%Y-%m-%dT%H', granularity: 'hour' };
+    }
+
+    if (diffDays <= 62) {
+      for (let i = 0; i < diffDays; i += 1) {
+        const d = new Date(windowStart.getTime() + i * 86400000);
+        bucketKeys.push(d.toISOString().slice(0, 10));
+      }
+      return { windowStart, windowEnd, bucketKeys, format: '%Y-%m-%d', granularity: 'day' };
+    }
+
+    const startMonth = new Date(Date.UTC(windowStart.getUTCFullYear(), windowStart.getUTCMonth(), 1));
+    const endMonth = new Date(Date.UTC(windowEnd.getUTCFullYear(), windowEnd.getUTCMonth(), 1));
+    const monthCount =
+      (endMonth.getUTCFullYear() - startMonth.getUTCFullYear()) * 12 +
+      (endMonth.getUTCMonth() - startMonth.getUTCMonth()) + 1;
+
+    if (monthCount > 60) {
+      return { error: 'Custom range cannot exceed 5 years.' };
+    }
+
+    for (let i = 0; i < monthCount; i += 1) {
+      const d = new Date(Date.UTC(startMonth.getUTCFullYear(), startMonth.getUTCMonth() + i, 1));
+      bucketKeys.push(d.toISOString().slice(0, 7));
+    }
+    return { windowStart, windowEnd, bucketKeys, format: '%Y-%m', granularity: 'month' };
+  }
+
+  const days = ACTIVITY_PERIOD_DAYS[period] || 7;
+  const windowEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+  const windowStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - (days - 1), 0, 0, 0, 0));
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - offset));
+    bucketKeys.push(d.toISOString().slice(0, 10));
+  }
+  return { windowStart, windowEnd, bucketKeys, format: '%Y-%m-%d', granularity: 'day' };
+}
+
+async function buildUserActivitySeries({ totalUsers, period = '7d', startDate, endDate }) {
+  const range = resolveActivityRange(period, startDate, endDate);
+  if (range.error) return { error: range.error };
+
+  const { windowStart, windowEnd, bucketKeys, format, granularity } = range;
+  let series = bucketKeys.map((date) => ({ date, totalUsers, activeUsers: 0 }));
+  const windowActiveSet = new Set();
+
+  try {
+    const [
+      usersAfterEndCount,
+      newUsersAgg,
+      updatedUsersAgg,
+      activityLogAgg,
+      clickLogAgg,
+      transactionAgg
+    ] = await Promise.all([
+      User.countDocuments({ createdAt: { $gt: windowEnd } }),
+      User.aggregate([
+        { $match: { createdAt: { $gte: windowStart, $lte: windowEnd } } },
+        {
+          $group: {
+            _id: { $dateToString: { format, date: '$createdAt' } },
+            count: { $sum: 1 },
+            userIds: { $addToSet: '$_id' }
+          }
+        }
+      ]),
+      User.aggregate([
+        { $match: { isBanned: { $ne: true }, updatedAt: { $gte: windowStart, $lte: windowEnd } } },
+        {
+          $group: {
+            _id: { $dateToString: { format, date: '$updatedAt' } },
+            userIds: { $addToSet: '$_id' }
+          }
+        }
+      ]),
+      UserActivityLog.aggregate([
+        { $match: { createdAt: { $gte: windowStart, $lte: windowEnd } } },
+        {
+          $group: {
+            _id: { $dateToString: { format, date: '$createdAt' } },
+            userIds: { $addToSet: '$userId' }
+          }
+        }
+      ]),
+      ClickLog.aggregate([
+        { $match: { createdAt: { $gte: windowStart, $lte: windowEnd } } },
+        {
+          $group: {
+            _id: { $dateToString: { format, date: '$createdAt' } },
+            userIds: { $addToSet: '$userId' }
+          }
+        }
+      ]),
+      Transaction.aggregate([
+        { $match: { createdAt: { $gte: windowStart, $lte: windowEnd } } },
+        {
+          $group: {
+            _id: { $dateToString: { format, date: '$createdAt' } },
+            userIds: { $addToSet: '$userId' }
+          }
+        }
+      ])
+    ]);
+
+    const newCountByBucket = {};
+    const activeSetsByBucket = {};
+    bucketKeys.forEach((key) => {
+      newCountByBucket[key] = 0;
+      activeSetsByBucket[key] = new Set();
+    });
+
+    const addActiveUsers = (rows) => {
+      rows.forEach((row) => {
+        const bucketSet = activeSetsByBucket[row._id];
+        if (!bucketSet || !Array.isArray(row.userIds)) return;
+        row.userIds.forEach((id) => {
+          if (id) bucketSet.add(String(id));
+        });
+      });
+    };
+
+    newUsersAgg.forEach((row) => {
+      if (Object.prototype.hasOwnProperty.call(newCountByBucket, row._id)) {
+        newCountByBucket[row._id] = row.count || 0;
+      }
+    });
+
+    addActiveUsers(newUsersAgg);
+    addActiveUsers(updatedUsersAgg);
+    addActiveUsers(activityLogAgg);
+    addActiveUsers(clickLogAgg);
+    addActiveUsers(transactionAgg);
+
+    const windowEndTotal = Math.max(0, totalUsers - usersAfterEndCount);
+    const windowNewTotal = bucketKeys.reduce((sum, key) => sum + newCountByBucket[key], 0);
+    let runningTotal = Math.max(0, windowEndTotal - windowNewTotal);
+
+    series = bucketKeys.map((key) => {
+      runningTotal += newCountByBucket[key];
+      activeSetsByBucket[key].forEach((id) => windowActiveSet.add(id));
+      return {
+        date: key,
+        totalUsers: runningTotal,
+        activeUsers: Math.min(runningTotal, activeSetsByBucket[key].size)
+      };
+    });
+  } catch (activityErr) {
+    console.error('UserActivity aggregation warning:', activityErr);
+  }
+
+  return { series, granularity, windowStart, bucketKeys, windowActiveSet };
+}
+
+router.get('/user-activity', requirePrimaryAdmin, async (req, res) => {
+  try {
+    const period = ['1d', '7d', '30d', '1y', 'custom'].includes(req.query.period)
+      ? req.query.period
+      : '7d';
+    const { startDate, endDate } = req.query;
+
+    const totalUsers = await User.countDocuments();
+    const result = await buildUserActivitySeries({ totalUsers, period, startDate, endDate });
+
+    if (result.error) {
+      return res.status(400).json({ success: false, error: result.error });
+    }
+
+    res.json({
+      success: true,
+      period,
+      granularity: result.granularity,
+      userActivity: result.series,
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'Failed to fetch user activity' });
+  }
+});
+
 router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
@@ -1706,118 +1934,11 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
     ]);
     const economyTotal = economyObj.length > 0 ? economyObj[0].total : 0;
 
-    // Last 7 days (UTC) User Activity: cumulative Total Users & daily unique Active Users
-    const now = new Date();
-    const dayKeys = [];
-    for (let offset = 6; offset >= 0; offset -= 1) {
-      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - offset));
-      dayKeys.push(d.toISOString().slice(0, 10));
-    }
-    const windowStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 6, 0, 0, 0, 0));
-
-    let userActivity = dayKeys.map((date) => ({ date, totalUsers, activeUsers: 0 }));
-    const currentWindowActiveSet = new Set();
-
-    try {
-      const [
-        dailyNewUsersAgg,
-        dailyUpdatedUsersAgg,
-        activityLogAgg,
-        clickLogAgg,
-        transactionAgg
-      ] = await Promise.all([
-        User.aggregate([
-          { $match: { createdAt: { $gte: windowStart } } },
-          {
-            $group: {
-              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-              count: { $sum: 1 },
-              userIds: { $addToSet: '$_id' }
-            }
-          }
-        ]),
-        User.aggregate([
-          { $match: { isBanned: { $ne: true }, updatedAt: { $gte: windowStart } } },
-          {
-            $group: {
-              _id: { $dateToString: { format: '%Y-%m-%d', date: '$updatedAt' } },
-              userIds: { $addToSet: '$_id' }
-            }
-          }
-        ]),
-        UserActivityLog.aggregate([
-          { $match: { createdAt: { $gte: windowStart } } },
-          {
-            $group: {
-              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-              userIds: { $addToSet: '$userId' }
-            }
-          }
-        ]),
-        ClickLog.aggregate([
-          { $match: { createdAt: { $gte: windowStart } } },
-          {
-            $group: {
-              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-              userIds: { $addToSet: '$userId' }
-            }
-          }
-        ]),
-        Transaction.aggregate([
-          { $match: { createdAt: { $gte: windowStart } } },
-          {
-            $group: {
-              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-              userIds: { $addToSet: '$userId' }
-            }
-          }
-        ])
-      ]);
-
-      const newCountByDay = {};
-      const activeSetsByDay = {};
-      dayKeys.forEach((key) => {
-        newCountByDay[key] = 0;
-        activeSetsByDay[key] = new Set();
-      });
-
-      const addActiveUsers = (rows) => {
-        rows.forEach((row) => {
-          const daySet = activeSetsByDay[row._id];
-          if (!daySet || !Array.isArray(row.userIds)) return;
-          row.userIds.forEach((id) => {
-            if (id) daySet.add(String(id));
-          });
-        });
-      };
-
-      dailyNewUsersAgg.forEach((row) => {
-        if (Object.prototype.hasOwnProperty.call(newCountByDay, row._id)) {
-          newCountByDay[row._id] = row.count || 0;
-        }
-      });
-
-      addActiveUsers(dailyNewUsersAgg);
-      addActiveUsers(dailyUpdatedUsersAgg);
-      addActiveUsers(activityLogAgg);
-      addActiveUsers(clickLogAgg);
-      addActiveUsers(transactionAgg);
-
-      const windowNewTotal = dayKeys.reduce((sum, key) => sum + newCountByDay[key], 0);
-      let runningTotal = Math.max(0, totalUsers - windowNewTotal);
-
-      userActivity = dayKeys.map((key) => {
-        runningTotal += newCountByDay[key];
-        activeSetsByDay[key].forEach((id) => currentWindowActiveSet.add(id));
-        return {
-          date: key,
-          totalUsers: runningTotal,
-          activeUsers: Math.min(runningTotal, activeSetsByDay[key].size)
-        };
-      });
-    } catch (activityErr) {
-      console.error('Overview userActivity aggregation warning:', activityErr);
-    }
+    const activityResult = await buildUserActivitySeries({ totalUsers, period: '7d' });
+    const userActivity = activityResult.series || [];
+    const windowStart = activityResult.windowStart;
+    const dayKeys = activityResult.bucketKeys || [];
+    const currentWindowActiveSet = activityResult.windowActiveSet || new Set();
 
     let usersByCountry = [];
     try {
@@ -1956,6 +2077,117 @@ router.get('/overview-stats', requirePrimaryAdmin, async (req, res) => {
       };
     } catch (summaryErr) {
       console.error('Overview summaryMetrics aggregation warning:', summaryErr);
+    }
+
+    summaryMetrics.totalAffiliates = {
+      value: 0,
+      invitedUsers: 0,
+      changePct: 0,
+      series: dayKeys.map(() => 0),
+    };
+    summaryMetrics.totalAffiliatesEarned = {
+      value: 0,
+      commissionEarned: 0,
+      changePct: 0,
+      series: dayKeys.map(() => 0),
+    };
+
+    try {
+      const [affiliateFirstInviteAgg, invitedUsersAgg, referralCommissionAgg] = await Promise.all([
+        User.aggregate([
+          { $match: { referredBy: { $ne: null } } },
+          { $group: { _id: '$referredBy', firstInviteAt: { $min: '$createdAt' } } }
+        ]),
+        User.aggregate([
+          { $match: { referredBy: { $ne: null } } },
+          {
+            $group: {
+              _id: null,
+              invitedCount: { $sum: 1 },
+              invitedEarned: { $sum: '$totalEarned' },
+              userIds: { $push: '$_id' }
+            }
+          }
+        ]),
+        User.aggregate([
+          { $group: { _id: null, totalCommission: { $sum: '$referralEarnings' } } }
+        ])
+      ]);
+
+      const totalAffiliatesCount = affiliateFirstInviteAgg.length;
+      const newAffiliatesByDay = {};
+      dayKeys.forEach((k) => { newAffiliatesByDay[k] = 0; });
+      let baseAffiliates = 0;
+
+      affiliateFirstInviteAgg.forEach((row) => {
+        const key = row.firstInviteAt ? new Date(row.firstInviteAt).toISOString().slice(0, 10) : '';
+        if (Object.prototype.hasOwnProperty.call(newAffiliatesByDay, key)) {
+          newAffiliatesByDay[key] += 1;
+        } else if (!row.firstInviteAt || new Date(row.firstInviteAt) < windowStart) {
+          baseAffiliates += 1;
+        }
+      });
+
+      let runningAffiliates = baseAffiliates;
+      const affiliatesSeries = dayKeys.map((k) => {
+        runningAffiliates += newAffiliatesByDay[k];
+        return runningAffiliates;
+      });
+
+      const invitedRow = invitedUsersAgg[0] || { invitedCount: 0, invitedEarned: 0, userIds: [] };
+      const invitedCount = invitedRow.invitedCount || 0;
+      const invitedEarned = invitedRow.invitedEarned || 0;
+      const invitedUserIds = Array.isArray(invitedRow.userIds) ? invitedRow.userIds : [];
+      const totalCommission = referralCommissionAgg.length > 0 ? (referralCommissionAgg[0].totalCommission || 0) : 0;
+
+      const invitedEarnByDay = {};
+      dayKeys.forEach((k) => { invitedEarnByDay[k] = 0; });
+
+      if (invitedUserIds.length > 0) {
+        const dailyInvitedEarnAgg = await Transaction.aggregate([
+          {
+            $match: {
+              userId: { $in: invitedUserIds },
+              status: 'completed',
+              amount: { $gt: 0 },
+              createdAt: { $gte: windowStart }
+            }
+          },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              total: { $sum: '$amount' }
+            }
+          }
+        ]);
+        dailyInvitedEarnAgg.forEach((row) => {
+          if (Object.prototype.hasOwnProperty.call(invitedEarnByDay, row._id)) {
+            invitedEarnByDay[row._id] = row.total || 0;
+          }
+        });
+      }
+
+      const windowInvitedEarn = dayKeys.reduce((sum, k) => sum + invitedEarnByDay[k], 0);
+      let runningInvitedEarn = Math.max(0, invitedEarned - windowInvitedEarn);
+      const affiliatesEarnedSeries = dayKeys.map((k) => {
+        runningInvitedEarn += invitedEarnByDay[k];
+        return runningInvitedEarn;
+      });
+
+      summaryMetrics.totalAffiliates = {
+        value: totalAffiliatesCount,
+        invitedUsers: invitedCount,
+        changePct: calcGrowthPct(affiliatesSeries[0] || 0, affiliatesSeries[affiliatesSeries.length - 1] || 0),
+        series: affiliatesSeries,
+      };
+      summaryMetrics.totalAffiliatesEarned = {
+        value: invitedEarned,
+        commissionEarned: totalCommission,
+        changePct: calcGrowthPct(affiliatesEarnedSeries[0] || 0, affiliatesEarnedSeries[affiliatesEarnedSeries.length - 1] || 0),
+        series: affiliatesEarnedSeries,
+      };
+    } catch (affiliateErr) {
+      console.error('Overview affiliateMetrics aggregation warning:', affiliateErr);
     }
 
     res.json({

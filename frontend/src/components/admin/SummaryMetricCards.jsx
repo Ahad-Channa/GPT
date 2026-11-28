@@ -1,5 +1,13 @@
 import { useMemo, useId } from 'react';
-import { FiUsers, FiZap, FiCreditCard, FiArrowUp, FiArrowDown } from 'react-icons/fi';
+import {
+  FiUsers,
+  FiZap,
+  FiCreditCard,
+  FiUserPlus,
+  FiAward,
+  FiArrowUp,
+  FiArrowDown,
+} from 'react-icons/fi';
 import CoinDisplay from '../CoinDisplay';
 import { buildSmoothLinePath } from './chartUtils';
 
@@ -60,10 +68,51 @@ const Sparkline = ({ series, color, idPrefix }) => {
   );
 };
 
+const MetricSparkCard = ({ card, uid }) => {
+  const pct = Number(card.metric.changePct) || 0;
+  const isNegative = pct < 0;
+  const formattedPct = `${isNegative ? '' : '+'}${pct.toFixed(1)}%`;
+
+  return (
+    <div className="admin-summary-card">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3.5 ${card.iconClass}`}>
+        <card.icon style={{ fontSize: '18px' }} />
+      </div>
+
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <div className="admin-summary-value">
+            {card.renderValue(card.metric.value)}
+          </div>
+          <div className="admin-summary-label">{card.label}</div>
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-2">
+            <span
+              className="admin-summary-trend !mt-0"
+              style={{ color: isNegative ? '#DC2626' : '#059669' }}
+            >
+              {isNegative ? <FiArrowDown size={13} /> : <FiArrowUp size={13} />}
+              <span>{formattedPct}</span>
+            </span>
+            {card.subMeta && (
+              <span className="admin-summary-meta">{card.subMeta}</span>
+            )}
+          </div>
+        </div>
+
+        <Sparkline
+          series={card.metric.series}
+          color={card.color}
+          idPrefix={`${uid}-${card.key}`}
+        />
+      </div>
+    </div>
+  );
+};
+
 const SummaryMetricCards = ({ metrics }) => {
   const uid = useId().replace(/:/g, '');
 
-  const cards = [
+  const primaryCards = [
     {
       key: 'totalUsers',
       label: 'Total Users',
@@ -93,44 +142,61 @@ const SummaryMetricCards = ({ metrics }) => {
     },
   ];
 
+  const affiliatesMetric = metrics?.totalAffiliates || {
+    value: 0,
+    invitedUsers: 0,
+    changePct: 0,
+    series: [],
+  };
+  const affiliatesEarnedMetric = metrics?.totalAffiliatesEarned || {
+    value: 0,
+    commissionEarned: 0,
+    changePct: 0,
+    series: [],
+  };
+
+  const affiliateCards = [
+    {
+      key: 'totalAffiliates',
+      label: 'Total Affiliates',
+      icon: FiUserPlus,
+      iconClass: 'bg-teal-50 text-teal-600',
+      color: '#0D9488',
+      metric: affiliatesMetric,
+      renderValue: (val) => (val || 0).toLocaleString(),
+      subMeta: `${(affiliatesMetric.invitedUsers || 0).toLocaleString()} Invited`,
+    },
+    {
+      key: 'totalAffiliatesEarned',
+      label: 'Total Affiliates Earned',
+      icon: FiAward,
+      iconClass: 'bg-violet-50 text-violet-600',
+      color: '#7C3AED',
+      metric: affiliatesEarnedMetric,
+      renderValue: (val) => <CoinDisplay amount={val || 0} size={20} compact={false} />,
+      subMeta: (
+        <span className="inline-flex items-center gap-1">
+          <span>Commission:</span>
+          <CoinDisplay amount={affiliatesEarnedMetric.commissionEarned || 0} size={12} compact={false} />
+        </span>
+      ),
+    },
+  ];
+
   return (
-    <div className="admin-summary-grid">
-      {cards.map((card) => {
-        const pct = Number(card.metric.changePct) || 0;
-        const isNegative = pct < 0;
-        const formattedPct = `${isNegative ? '' : '+'}${pct.toFixed(1)}%`;
+    <>
+      <div className="admin-summary-grid">
+        {primaryCards.map((card) => (
+          <MetricSparkCard key={card.key} card={card} uid={uid} />
+        ))}
+      </div>
 
-        return (
-          <div key={card.key} className="admin-summary-card">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3.5 ${card.iconClass}`}>
-              <card.icon style={{ fontSize: '18px' }} />
-            </div>
-
-            <div className="flex items-end justify-between gap-3">
-              <div className="min-w-0">
-                <div className="admin-summary-value">
-                  {card.renderValue(card.metric.value)}
-                </div>
-                <div className="admin-summary-label">{card.label}</div>
-                <div
-                  className="admin-summary-trend"
-                  style={{ color: isNegative ? '#DC2626' : '#059669' }}
-                >
-                  {isNegative ? <FiArrowDown size={13} /> : <FiArrowUp size={13} />}
-                  <span>{formattedPct}</span>
-                </div>
-              </div>
-
-              <Sparkline
-                series={card.metric.series}
-                color={card.color}
-                idPrefix={`${uid}-${card.key}`}
-              />
-            </div>
-          </div>
-        );
-      })}
-    </div>
+      <div className="admin-affiliate-grid">
+        {affiliateCards.map((card) => (
+          <MetricSparkCard key={card.key} card={card} uid={uid} />
+        ))}
+      </div>
+    </>
   );
 };
 

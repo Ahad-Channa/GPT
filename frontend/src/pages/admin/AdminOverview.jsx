@@ -50,6 +50,9 @@ const AdminOverview = () => {
     economyTotal: 0
   });
   const [userActivity, setUserActivity] = useState([]);
+  const [activityPeriod, setActivityPeriod] = useState('7d');
+  const [customActivityRange, setCustomActivityRange] = useState(null);
+  const [activityLoading, setActivityLoading] = useState(false);
   const [usersByCountry, setUsersByCountry] = useState([]);
   const [summaryMetrics, setSummaryMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -78,6 +81,40 @@ const AdminOverview = () => {
       toast.error('Error fetching overview stats');
     }
     setLoading(false);
+  };
+
+  const handleActivityPeriodChange = async (nextPeriod, range = null) => {
+    setActivityPeriod(nextPeriod);
+    if (nextPeriod === 'custom' && range) {
+      setCustomActivityRange(range);
+    } else if (nextPeriod !== 'custom') {
+      setCustomActivityRange(null);
+    }
+
+    setActivityLoading(true);
+    try {
+      const token = await currentUser.getIdToken();
+      const params = new URLSearchParams({ period: nextPeriod });
+      if (nextPeriod === 'custom' && range?.startDate && range?.endDate) {
+        params.set('startDate', range.startDate);
+        params.set('endDate', range.endDate);
+      }
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/user-activity?${params.toString()}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = await res.json();
+      if (data.success && Array.isArray(data.userActivity)) {
+        setUserActivity(data.userActivity);
+      } else {
+        toast.error(data.error || 'Failed to load user activity');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error fetching user activity');
+    } finally {
+      setActivityLoading(false);
+    }
   };
 
   const statCards = [
@@ -145,7 +182,13 @@ const AdminOverview = () => {
           </div>
 
           <div className="admin-analytics-grid">
-            <UserActivityChart data={userActivity} />
+            <UserActivityChart
+              data={userActivity}
+              period={activityPeriod}
+              customRange={customActivityRange}
+              loading={activityLoading}
+              onPeriodChange={handleActivityPeriodChange}
+            />
             <UsersByCountryCard data={usersByCountry} />
           </div>
 
