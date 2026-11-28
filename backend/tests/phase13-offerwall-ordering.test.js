@@ -180,7 +180,9 @@ test('frontend helper changes sequence when configured (server) order changes', 
       { id: 'cpx', category: 'surveys', order: 6 },
     ],
   });
-  assert.equal(first.surveys[0].id, 'goodpicks');
+  // Goodpicks is listed under Gaming & App only (Harun), never under Surveys.
+  assert.equal(first.surveys[0].id, 'cpx');
+  assert.equal(first.gaming[0].id, 'goodpicks');
 
   const second = buildOfferwallSections({
     enabledProviders: [
@@ -189,7 +191,7 @@ test('frontend helper changes sequence when configured (server) order changes', 
     ],
   });
   assert.equal(second.surveys[0].id, 'cpx');
-  assert.deepEqual(second.surveys.map((p) => p.id).slice(0, 2), ['cpx', 'goodpicks']);
+  assert.deepEqual(second.surveys.map((p) => p.id), ['cpx']);
 });
 
 test('frontend helper does not force Goodpicks first when its order is higher', async () => {
@@ -200,7 +202,7 @@ test('frontend helper does not force Goodpicks first when its order is higher', 
       { id: 'goodpicks', category: 'gaming', order: 50 },
     ],
   });
-  assert.equal(surveys[0].id, 'goodpicks'); // only provider in its category set stays
+  assert.equal(surveys.length, 0); // Goodpicks is not a survey wall
   assert.equal(gaming[0].id, 'torox');
   assert.equal(gaming[1].id, 'goodpicks');
 });

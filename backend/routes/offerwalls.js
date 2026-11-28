@@ -808,7 +808,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
             { $inc: { commissionGenerated: refAmount } }
           );
 
-          await Transaction.create({
+          const referralTx = await Transaction.create({
             userId: referrer._id,
             transactionType: 'referral_reward',
             sourceType: 'referral',
@@ -820,6 +820,8 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
             status: 'hold',
             holdUntil: holdDate,
           });
+          // Affiliate earning in the Live Feed (no refresh needed).
+          broadcastNewEarning({ transaction: referralTx, user: referrer });
 
           await notify(
             referrer._id,
@@ -854,7 +856,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
               { $inc: { commissionGenerated: signupBonusCoins } }
             );
 
-            await Transaction.create({
+            const signupBonusTx = await Transaction.create({
               userId: referrer._id,
               transactionType: 'referral_reward',
               sourceType: 'referral',
@@ -865,6 +867,7 @@ const handleLegacyOfferwallPostback = async (providerId, req, res, params = {}, 
               description: `Referral Signup Bonus — ${user.displayName || 'referred user'}'s first offer`,
               status: 'completed',
             });
+            broadcastNewEarning({ transaction: signupBonusTx, user: updatedReferrer || referrer });
 
             await notify(
               referrer._id,

@@ -7,6 +7,7 @@ const Settings = require('../models/Settings');
 const LeaderboardCycle = require('../models/Leaderboard');
 const notify = require('../utils/notify');
 const { emitWalletUpdate, emitToUser } = require('../utils/walletEvents');
+const { broadcastNewEarning } = require('../utils/earningFeed');
 const { REAL_OFFER_EARNING_TYPES, getEarningHoldDecision } = require('../utils/earningTypes');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -270,28 +271,8 @@ async function resetLeaderboard(period) {
           createdAt: new Date().toISOString(),
         });
 
-        // Broadcast new earning event globally so ALL users' live feed bars update immediately
-        // (instead of waiting for the 15-second polling cycle)
-        try {
-          const io = global.__io;
-          if (io) {
-            io.emit('newEarning', {
-              _id: rewardTx._id,
-              transactionType: 'leaderboard_reward',
-              amount: reward,
-              description: rewardTx.description,
-              createdAt: rewardTx.createdAt,
-              userId: {
-                _id: user._id,
-                displayName: user.displayName,
-                avatarUrl: user.avatarUrl,
-                isPrivate: user.isPrivate || false,
-              },
-            });
-          }
-        } catch (socketErr) {
-          console.warn('[leaderboard] Global socket broadcast failed:', socketErr.message);
-        }
+        // Live Feed for everyone (same payload/privacy rules as other earnings).
+        broadcastNewEarning({ transaction: rewardTx, user });
       }
     }
 

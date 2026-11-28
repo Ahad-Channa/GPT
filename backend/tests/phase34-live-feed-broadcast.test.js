@@ -31,11 +31,12 @@ test('private users are scrubbed exactly like the REST feed (no offer title or t
   assert.deepEqual(payload.metadata, scrubTransaction(tx()).metadata);
 });
 
-test('held rewards appear in the feed; zero amounts, reversals and non-offer types never do', () => {
+test('held rewards appear in the feed; zero amounts, reversals and non-feed types never do', () => {
   assert.ok(buildNewEarningPayload({ transaction: tx({ status: 'hold' }), user: user() }));
   assert.equal(buildNewEarningPayload({ transaction: tx({ amount: 0 }), user: user() }), null);
   assert.equal(buildNewEarningPayload({ transaction: tx({ status: 'reversed' }), user: user() }), null);
-  assert.equal(buildNewEarningPayload({ transaction: tx({ transactionType: 'withdrawal' }), user: user() }), null);
+  // Withdrawals are broadcast now (sanitized, see phase45); chargebacks never are.
+  assert.equal(buildNewEarningPayload({ transaction: tx({ transactionType: 'chargeback' }), user: user() }), null);
   assert.equal(buildNewEarningPayload({ transaction: null, user: user() }), null);
 });
 

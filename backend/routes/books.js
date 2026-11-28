@@ -7,6 +7,7 @@ const Book = require('../models/Book');
 const BookOrder = require('../models/BookOrder');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const { broadcastNewEarning } = require('../utils/earningFeed');
 const Settings = require('../models/Settings');
 const Notification = require('../models/Notification');
 const { verifyToken } = require('../middlewares/authMiddleware');
@@ -331,6 +332,7 @@ router.post('/order', verifyToken, async (req, res) => {
       method: 'book',
       payoutDestination: book.title,
     });
+    broadcastNewEarning({ transaction: tx, user: updatedUser });
 
     const order = await BookOrder.create({
       userId: user._id,

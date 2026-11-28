@@ -58,8 +58,9 @@ export const buildOrderedProviders = (enabledProviders = [], fallbackDefs = FALL
 export const buildOfferwallSections = ({ enabledProviders = [] } = {}) => {
   const ordered = buildOrderedProviders(enabledProviders);
 
+  // Harun: Goodpicks is shown under Gaming & App only, not under Surveys.
   const surveys = ordered.filter(
-    (provider) => provider && (provider.id === 'goodpicks' || provider.category === 'surveys')
+    (provider) => provider && provider.id !== 'goodpicks' && provider.category === 'surveys'
   );
 
   const gaming = [];

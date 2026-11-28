@@ -815,7 +815,7 @@ router.put('/users/:id/balance', requirePermission('manage_users'), async (req, 
     await user.save();
 
     // Create a transaction record for admin balance adjustments
-    await Transaction.create({
+    const adjustmentTx = await Transaction.create({
       userId: user._id,
       transactionType: 'admin_adjustment',
       amount: amountNum,
@@ -823,6 +823,8 @@ router.put('/users/:id/balance', requirePermission('manage_users'), async (req, 
       description: `Admin Adjustment: ${reason || 'No reason provided'} (by ${req.dbUser.displayName || req.dbUser.email})`,
       status: 'completed',
     });
+    // Positive adjustments appear in the Live Feed as "Bonus" (negative ones are skipped).
+    broadcastNewEarning({ transaction: adjustmentTx, user });
 
     await createLog(req.dbUser._id, 'ADJUST_BALANCE', user._id, { amount, reason, prevBalance, newBalance: user.walletBalance });
 
@@ -1799,6 +1801,7 @@ router.put('/custom-offers/submissions/:id', requirePermission('manage_offerwall
                 status: txStatus,
                 holdUntil: holdDate,
               });
+              broadcastNewEarning({ transaction: refTx, user: referrer });
 
               await notify(
                 referrer._id,
@@ -3669,7 +3672,7 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
                     emitWalletUpdate(referrer.firebaseUid, balanceAfterRef);
                   }
 
-                  await Transaction.create({
+                  const proofRefTx = await Transaction.create({
                     userId: referrer._id,
                     transactionType: 'referral_reward',
                     sourceType: 'referral',
@@ -3681,6 +3684,7 @@ router.post('/proofs/:type/:id/:action', requirePermission('manage_offerwalls'),
                     status: txStatus,
                     holdUntil: holdDate,
                   });
+                  broadcastNewEarning({ transaction: proofRefTx, user: referrer });
 
                   await notify(
                     referrer._id,

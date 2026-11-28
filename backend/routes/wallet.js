@@ -10,6 +10,7 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 const { fraudCheck } = require('../middlewares/fraudCheck');
 const notify = require('../utils/notify');
 const { emitWalletUpdate } = require('../utils/walletEvents');
+const { broadcastNewEarning } = require('../utils/earningFeed');
 const { notifyAdmins } = require('../utils/adminNotify');
 const {
   ACTIVE_EARNING_STATUSES,
@@ -436,6 +437,8 @@ router.post('/withdraw', verifyToken, fraudCheck('withdrawal', 'full'), async (r
         ...(brand && { brand }),
       },
     });
+    // Live Feed for everyone (payout destination is stripped by the feed).
+    broadcastNewEarning({ transaction, user: updatedUser });
 
     res.status(200).json({
       success: true,
@@ -724,7 +727,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
     }
 
     // 5. Archive Transaction
-    await Transaction.create({
+    const dailyBonusTx = await Transaction.create({
       userId: user._id,
       transactionType: 'daily_bonus',
       amount: rewardAmount,
@@ -734,6 +737,7 @@ router.post('/daily-bonus', verifyToken, async (req, res) => {
       holdUntil: holdDecision.holdUntil,
       ...(holdDecision.status === 'hold' && { metadata: { walletApplied: false } }),
     });
+    broadcastNewEarning({ transaction: dailyBonusTx, user: updatedUser });
 
     const nextClaimAt = nextUtcMidnight(now).toISOString();
 
@@ -853,7 +857,7 @@ router.post('/redeem-promo', verifyToken, async (req, res) => {
     // Push live balance to browser
     emitWalletUpdate(updatedUser.firebaseUid, updatedUser.walletBalance);
 
-    await Transaction.create({
+    const promoTx = await Transaction.create({
       userId: user._id,
       transactionType: 'promo_code',
       amount: promo.rewardCoins,
@@ -861,6 +865,7 @@ router.post('/redeem-promo', verifyToken, async (req, res) => {
       description: `Promo Code: ${normalizedCode}`,
       status: 'completed',
     });
+    broadcastNewEarning({ transaction: promoTx, user: updatedUser });
 
     res.status(200).json({
       success: true,

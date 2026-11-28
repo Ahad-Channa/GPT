@@ -300,6 +300,9 @@ const Home = () => {
   // Order is authoritative from the backend settings response; the shared
   // helper only appends true fallback providers that are absent from config.
   const { surveys: surveyProviders, gaming: gamingProviders } = buildOfferwallSections({ enabledProviders });
+  // No active survey offerwall: hide the Surveys section and its filter tab
+  // instead of showing an empty box.
+  const hideSurveys = !loadingSettings && surveyProviders.length === 0;
 
   const tabs = [
     {
@@ -325,7 +328,7 @@ const Home = () => {
       ref: surveysRef,
       iconSrc: '/coins/survyfoo.png',
     },
-  ];
+  ].filter((tab) => !(tab.id === 'surveys' && hideSurveys));
 
   const displayFeaturedOffers = allFeaturedOffers.slice(0, visibleFeaturedCount);
 
@@ -696,7 +699,7 @@ const Home = () => {
             )}
 
             {/* Section 3: Surveys */}
-            {(filter === 'all' || filter === 'surveys') && (
+            {!hideSurveys && (filter === 'all' || filter === 'surveys') && (
               <motion.section
                 ref={surveysRef}
                 variants={item}

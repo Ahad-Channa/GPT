@@ -61,15 +61,37 @@ function sanitizePublicWithdrawal(tx) {
 }
 
 const FEED_STATUSES = ['completed', 'hold'];
+const FEED_WITHDRAWAL_STATUSES = ['pending', 'completed'];
+// Everything the public Live Feed shows besides withdrawals. Shared by the REST
+// feed (/api/public/recent-earnings) and the live socket broadcast.
+// referral_reward = affiliate earnings.
+const FEED_EARNING_TYPES = Object.freeze([
+  ...REAL_OFFER_EARNING_TYPES,
+  'daily_bonus',
+  'admin_adjustment',
+  'promo_code',
+  'leaderboard_reward',
+  'vip_reward',
+  'referral_reward',
+]);
+
+const isWithdrawal = (tx) => tx?.transactionType === 'withdrawal';
+
+// Same rule as the REST feed query.
+const isPublicFeedTransaction = (tx) => {
+  if (!tx) return false;
+  if (isWithdrawal(tx)) return FEED_WITHDRAWAL_STATUSES.includes(tx.status);
+  return FEED_EARNING_TYPES.includes(tx.transactionType)
+    && FEED_STATUSES.includes(tx.status)
+    && Number(tx.amount) > 0
+    && tx.metadata?.testOffer !== true;
+};
 
 // Same shape as a populated /recent-earnings row (userId is the public profile).
 const buildNewEarningPayload = ({ transaction, user } = {}) => {
   if (!transaction || !user) return null;
   const plain = typeof transaction.toObject === 'function' ? transaction.toObject() : { ...transaction };
-  if (!REAL_OFFER_EARNING_TYPES.includes(plain.transactionType)) return null;
-  if (!FEED_STATUSES.includes(plain.status)) return null;
-  if (!(Number(plain.amount) > 0)) return null;
-  if (plain.metadata?.testOffer === true) return null;
+  if (!isPublicFeedTransaction(plain)) return null;
 
   const payload = {
     ...plain,
@@ -80,7 +102,8 @@ const buildNewEarningPayload = ({ transaction, user } = {}) => {
       isPrivate: Boolean(user.isPrivate),
     },
   };
-  return user.isPrivate ? { ...scrubTransaction(payload), userId: payload.userId } : payload;
+  const visible = user.isPrivate ? { ...scrubTransaction(payload), userId: payload.userId } : payload;
+  return isWithdrawal(visible) ? sanitizePublicWithdrawal(visible) : visible;
 };
 
 // Fire-and-forget: a socket problem must never affect crediting.
@@ -97,4 +120,13 @@ const broadcastNewEarning = ({ transaction, user, io = global.__io } = {}) => {
   }
 };
 
-module.exports = { scrubTransaction, sanitizePublicWithdrawal, buildNewEarningPayload, broadcastNewEarning };
+module.exports = {
+  FEED_EARNING_TYPES,
+  FEED_STATUSES,
+  FEED_WITHDRAWAL_STATUSES,
+  scrubTransaction,
+  sanitizePublicWithdrawal,
+  isPublicFeedTransaction,
+  buildNewEarningPayload,
+  broadcastNewEarning,
+};

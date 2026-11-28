@@ -163,11 +163,15 @@ const Earn = () => {
   // helper only appends true fallback providers that are absent from config.
   const { surveys: surveyProviders, gaming: gamingProviders } = buildOfferwallSections({ enabledProviders });
 
+  // No active survey offerwall: hide the Surveys tab and open Gaming instead.
+  const hideSurveys = !loadingSettings && surveyProviders.length === 0;
+  const shownTab = hideSurveys && activeTab === 'surveys' ? 'gaming' : activeTab;
+
   const tabs = [
     { id: 'surveys', label: t('earn.tabSurveys'), icon: FiCheckCircle, count: surveyProviders.length },
     { id: 'gaming', label: t('earn.tabGaming'), icon: FiMonitor, count: gamingProviders.length },
     { id: 'featured', label: t('earn.tabFeatured'), icon: FiStar, count: directOffers.length + customOffers.length },
-  ];
+  ].filter((tab) => !(tab.id === 'surveys' && hideSurveys));
 
   const renderEmptyState = (labelKey) => (
     <div className="glass-card p-16 text-center flex flex-col items-center gap-4">
@@ -201,7 +205,7 @@ const Earn = () => {
             {tabs.map(tab => (
               <TabButton
                 key={tab.id}
-                active={activeTab === tab.id}
+                active={shownTab === tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 icon={tab.icon}
                 label={tab.label}
@@ -214,7 +218,7 @@ const Earn = () => {
         {/* Tab Content */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeTab}
+            key={shownTab}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -238,7 +242,7 @@ const Earn = () => {
             ) : (
               <>
                 {/* ─── SURVEYS TAB ─── */}
-                {activeTab === 'surveys' && (
+                {shownTab === 'surveys' && (
                   <>
                     {loadingSettings ? (
                       <div className="glass-card p-12 text-center flex flex-col items-center gap-3">
@@ -258,7 +262,7 @@ const Earn = () => {
                 )}
 
                 {/* ─── GAMING & APPS TAB ─── */}
-                {activeTab === 'gaming' && (
+                {shownTab === 'gaming' && (
                   <>
                     {loadingSettings ? (
                       <div className="glass-card p-12 text-center flex flex-col items-center gap-3">
@@ -278,7 +282,7 @@ const Earn = () => {
                 )}
 
                 {/* ─── FEATURED OFFERS TAB ─── */}
-                {activeTab === 'featured' && (
+                {shownTab === 'featured' && (
                   <>
                     {loadingOffers ? (
                       <div className="glass-card p-12 text-center flex flex-col items-center gap-3">

@@ -56,8 +56,10 @@ test('live feed uses bonus chips without popup and supports mouse dragging', () 
 });
 
 test('backend feed includes affiliate earnings', () => {
+  const feed = fs.readFileSync(path.join(here, '../../backend/utils/earningFeed.js'), 'utf8');
+  assert.match(feed, /'vip_reward',\s*'referral_reward',/);
   const pub = fs.readFileSync(path.join(here, '../../backend/routes/public.js'), 'utf8');
-  assert.match(pub, /'vip_reward', 'referral_reward'\]/);
+  assert.match(pub, /transactionType: \{ \$in: FEED_EARNING_TYPES \}/);
 });
 
 test('withdrawals show only the payout name; books keep the title for the hover', async () => {

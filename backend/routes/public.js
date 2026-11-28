@@ -9,7 +9,13 @@ const {
 } = require('../utils/earningTypes');
 const Faq = require('../models/Faq');
 
-const { scrubTransaction, sanitizePublicWithdrawal } = require('../utils/earningFeed');
+const {
+  FEED_EARNING_TYPES,
+  FEED_STATUSES,
+  FEED_WITHDRAWAL_STATUSES,
+  scrubTransaction,
+  sanitizePublicWithdrawal,
+} = require('../utils/earningFeed');
 
 // ── GET /api/public/user/:id ──────────────────────────────────────────────────
 // Returns a user's public profile data and their recent completed offers.
@@ -130,21 +136,20 @@ router.get('/recent-earnings', async (req, res) => {
     const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 50);
     const skip = Math.max(parseInt(req.query.skip) || 0, 0);
 
-    // referral_reward = affiliate earnings (shown as "Affiliate Earnings" in the feed).
-    const validTransactionTypes = [...REAL_OFFER_EARNING_TYPES, 'daily_bonus', 'admin_adjustment', 'promo_code', 'leaderboard_reward', 'vip_reward', 'referral_reward'];
-
+    // Same rule as the live socket broadcast (utils/earningFeed.js).
+    // FEED_EARNING_TYPES includes referral_reward (affiliate earnings).
     let recentEarnings = await Transaction.find({
       $or: [
         {
-          transactionType: { $in: validTransactionTypes },
-          status: { $in: ['completed', 'hold'] },
+          transactionType: { $in: FEED_EARNING_TYPES },
+          status: { $in: FEED_STATUSES },
           amount: { $gt: 0 },
           // Rewards from test-mode offers are not shown publicly.
           'metadata.testOffer': { $ne: true }
         },
         {
           transactionType: 'withdrawal',
-          status: { $in: ['pending', 'completed'] }
+          status: { $in: FEED_WITHDRAWAL_STATUSES }
         }
       ]
     })

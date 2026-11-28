@@ -9,6 +9,7 @@ const VipClaim    = require('../models/VipClaim');
 const { VIP_LEVELS, getLevelFromEarned, getNextLevel, getLevelLabel, getDynamicVipLevels } = require('../utils/vipUtils');
 const { getEarningHoldDecision } = require('../utils/earningTypes');
 const { emitWalletUpdate } = require('../utils/walletEvents');
+const { broadcastNewEarning } = require('../utils/earningFeed');
 const notify = require('../utils/notify');
 
 /* ── Default reward amounts per level (used to seed VipConfig) ── */
@@ -191,7 +192,7 @@ router.post('/claim/:levelKey', requireAuth, async (req, res) => {
     await VipClaim.create({ userId: user._id, levelKey, amount: reward });
 
     // Transaction record
-    await Transaction.create({
+    const vipTx = await Transaction.create({
       userId: user._id,
       transactionType: 'vip_reward',
       sourceType: 'system',
@@ -207,6 +208,7 @@ router.post('/claim/:levelKey', requireAuth, async (req, res) => {
         ...(holdDecision.status === 'hold' && { walletApplied: false }),
       },
     });
+    broadcastNewEarning({ transaction: vipTx, user });
 
     // Notify user
     await notify(user._id, 'vip_level_up',

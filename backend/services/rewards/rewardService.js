@@ -454,6 +454,19 @@ const processReward = async ({
     } catch (error) {
       console.warn('[rewardService] Live Feed broadcast failed:', error.message);
     }
+    // The referrer's affiliate earning appears in the Live Feed too.
+    if (effect.referralTransaction?.userId) {
+      try {
+        const referrer = await userModel.findById(effect.referralTransaction.userId)
+          .select('displayName avatarUrl isPrivate')
+          .lean();
+        if (referrer) {
+          (hooks.broadcastNewEarning || broadcastNewEarning)({ transaction: effect.referralTransaction, user: referrer });
+        }
+      } catch (error) {
+        console.warn('[rewardService] Live Feed referral broadcast failed:', error.message);
+      }
+    }
     try {
       const isHeld = effect.rewardTx.status === 'hold';
       const rewardLabel = humanizeDisplayLabel(

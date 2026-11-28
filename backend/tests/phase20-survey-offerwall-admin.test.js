@@ -66,7 +66,8 @@ test('Surveys set matches the user-facing section (goodpicks + surveys) and excl
     { id: 'adscend', category: 'surveys', order: 9 },
   ];
   const { surveys } = buildOfferwallSections({ enabledProviders: enabled });
-  assert.deepEqual(new Set(surveys.map((p) => p.id)), new Set(['goodpicks', 'primeearn', 'cpx', 'adscend']));
+  // User side: survey walls only (Goodpicks stays under Gaming & App).
+  assert.deepEqual(new Set(surveys.map((p) => p.id)), new Set(['primeearn', 'cpx', 'adscend']));
 
   const adminSource = compact(read('frontend/src/pages/admin/AdminOfferwalls.jsx'));
   assert.match(adminSource, /activeTab/);
@@ -110,13 +111,13 @@ test('survey providers never appear in Gaming & App even when reordered first', 
   assert.equal(gamingIds.includes('adscend'), false);
   assert.equal(gamingIds.includes('cpx'), false);
   assert.equal(gamingIds.includes('primeearn'), false);
-  // Goodpicks remains in both sections.
+  // Goodpicks is under Gaming & App only (Harun, 2026-11-28).
   assert.equal(gamingIds.includes('goodpicks'), true);
-  assert.equal(surveys.some((p) => p.id === 'goodpicks'), true);
+  assert.equal(surveys.some((p) => p.id === 'goodpicks'), false);
   // Gaming/mixed order stays server-authoritative (Goodpicks positioned by order).
   assert.deepEqual(gamingIds, ['lootably', 'goodpicks', 'torox']);
   // Surveys keeps all survey providers + Goodpicks.
-  assert.deepEqual(new Set(surveys.map((p) => p.id)), new Set(['adscend', 'cpx', 'primeearn', 'goodpicks']));
+  assert.deepEqual(new Set(surveys.map((p) => p.id)), new Set(['adscend', 'cpx', 'primeearn']));
 });
 
 test('gaming keeps the existing 8 non-Goodpicks cap', async () => {
