@@ -190,13 +190,9 @@ const Home = () => {
     }, 50);
   };
 
-  const handleFeaturedWheel = (e) => {
-    if (!featuredScrollRef.current) return;
-    if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
-      featuredScrollRef.current.scrollLeft += e.deltaY;
-      handleFeaturedScroll();
-    }
-  };
+  // No wheel handler on the Featured Offers row: the vertical mouse wheel
+  // scrolls the page only (it used to move the cards sideways while scrolling
+  // down). Sideways: drag with the mouse, trackpad swipe or Shift + wheel.
 
   useEffect(() => {
     if (currentUser) {
@@ -595,7 +591,6 @@ const Home = () => {
                       onMouseMove={handleFeaturedMouseMove}
                       onMouseUp={handleFeaturedMouseUpOrLeave}
                       onMouseLeave={handleFeaturedMouseUpOrLeave}
-                      onWheel={handleFeaturedWheel}
                       onScroll={handleFeaturedScroll}
                       className="flex overflow-x-auto gap-[15px] w-full scrollbar-none cursor-grab active:cursor-grabbing select-none pb-2"
                       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}

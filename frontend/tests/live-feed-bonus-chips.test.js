@@ -77,3 +77,10 @@ test('withdrawals show only the payout name; books keep the title for the hover'
   assert.match(src, /hasPopup: Boolean\(withdrawal\.bookTitle\)/);
   assert.doesNotMatch(src, /Withdrawal Completed/);
 });
+
+test('Featured Offers row does not turn the vertical page scroll into sideways card movement', () => {
+  const home = fs.readFileSync(path.join(here, '../src/pages/Home.jsx'), 'utf8');
+  assert.doesNotMatch(home, /handleFeaturedWheel/);
+  assert.doesNotMatch(home, /scrollLeft \+= e\.deltaY/);
+  assert.match(home, /onScroll=\{handleFeaturedScroll\}/);
+});
