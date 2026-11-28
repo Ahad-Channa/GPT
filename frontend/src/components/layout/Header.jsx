@@ -1,4 +1,4 @@
-import { LOGO_ICON_PATH_PIXEL, LOGO_WORDMARK_PATH_PIXEL } from '../brand/logoPaths';
+import { LOGO_ICON_PATH, LOGO_WORDMARK_PATH } from '../brand/logoPaths';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -840,8 +840,8 @@ const Header = ({ onChatToggle, chatOpen, fullWidth }) => {
               xmlns="http://www.w3.org/2000/svg"
               className="object-contain"
             >
-              <path fillRule="evenodd" clipRule="evenodd" d={LOGO_ICON_PATH_PIXEL} fill="#00A247"/>
-              <path fillRule="evenodd" clipRule="evenodd" d={LOGO_WORDMARK_PATH_PIXEL}
+              <path fillRule="evenodd" clipRule="evenodd" d={LOGO_ICON_PATH} fill="#00A247"/>
+              <path fillRule="evenodd" clipRule="evenodd" d={LOGO_WORDMARK_PATH}
               fill={isDarkMode ? "#FFFFFF" : "#383F47"}
             />
           </svg>

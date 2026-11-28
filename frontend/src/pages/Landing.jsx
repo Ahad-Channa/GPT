@@ -1,4 +1,4 @@
-import { LOGO_ICON_PATH, LOGO_ICON_PATH_PIXEL, LOGO_WORDMARK_PATH, LOGO_WORDMARK_PATH_PIXEL } from '../components/brand/logoPaths';
+import { LOGO_ICON_PATH, LOGO_WORDMARK_PATH } from '../components/brand/logoPaths';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -410,8 +410,8 @@ const Landing = () => {
                 xmlns="http://www.w3.org/2000/svg"
                 className="object-contain"
               >
-                <path fillRule="evenodd" clipRule="evenodd" d={isMobile ? LOGO_ICON_PATH : LOGO_ICON_PATH_PIXEL} fill="#00A247" />
-                <path fillRule="evenodd" clipRule="evenodd" d={isMobile ? LOGO_WORDMARK_PATH : LOGO_WORDMARK_PATH_PIXEL} fill={isDarkMode ? "#FFFFFF" : "#383F47"} />
+                <path fillRule="evenodd" clipRule="evenodd" d={LOGO_ICON_PATH} fill="#00A247" />
+                <path fillRule="evenodd" clipRule="evenodd" d={LOGO_WORDMARK_PATH} fill={isDarkMode ? "#FFFFFF" : "#383F47"} />
               </svg>
             </div>
 
