@@ -84,3 +84,14 @@ test('Featured Offers row does not turn the vertical page scroll into sideways c
   assert.doesNotMatch(home, /scrollLeft \+= e\.deltaY/);
   assert.match(home, /onScroll=\{handleFeaturedScroll\}/);
 });
+
+test('coin sound file exists and is a real MP3 (Pixabay kaching picked by Harun)', () => {
+  const file = path.join(here, '../public/sounds/coin.mp3');
+  const buf = fs.readFileSync(file);
+  assert.ok(buf.length > 10000 && buf.length < 1024 * 1024, `size ${buf.length}`);
+  const isId3 = buf.slice(0, 3).toString('latin1') === 'ID3';
+  const isFrame = buf[0] === 0xff && (buf[1] & 0xe0) === 0xe0;
+  assert.ok(isId3 || isFrame, 'MP3 header');
+  const ctx = fs.readFileSync(path.join(here, '../src/contexts/NotificationContext.jsx'), 'utf8');
+  assert.match(ctx, /const COIN_SOUND_URL = '\/sounds\/coin\.mp3';/);
+});
