@@ -13,8 +13,31 @@ export const useNotifications = () => useContext(NotificationContext);
 // Notification types that play the coin sound.
 const COIN_SOUND_TYPES = new Set(['offer_reward', 'direct_offer_reward', 'custom_offer_approved']);
 
-// Synthesized "coin/cash" sound effect for earning notifications
+// Earning sound: the "kaching" file Harun picked (Pixabay, royalty-free), with
+// the old synthesized tone as fallback if the file is missing or cannot play.
+const COIN_SOUND_URL = '/sounds/coin.mp3';
+let coinAudio = null;
+
 const playCoinSound = () => {
+    try {
+        if (typeof Audio === 'undefined') return playSynthCoinSound();
+        if (!coinAudio) {
+            coinAudio = new Audio(COIN_SOUND_URL);
+            coinAudio.preload = 'auto';
+            coinAudio.volume = 0.6;
+        }
+        coinAudio.currentTime = 0;
+        const played = coinAudio.play();
+        if (played && typeof played.catch === 'function') {
+            played.catch(() => playSynthCoinSound());
+        }
+    } catch {
+        playSynthCoinSound();
+    }
+};
+
+// Synthesized "coin/cash" tone (fallback only)
+const playSynthCoinSound = () => {
     try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
