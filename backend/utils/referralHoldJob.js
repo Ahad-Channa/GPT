@@ -1,4 +1,4 @@
-const cron = require('node-cron');
+const { scheduleCron } = require('./cronSchedule');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const notify = require('./notify');
@@ -8,7 +8,7 @@ const notify = require('./notify');
  * Sweeps all 'referral_reward' transactions with status 'hold'
  * where 'holdUntil' <= now, and credits the referrer.
  */
-cron.schedule('0 0 * * *', async () => {
+scheduleCron('0 0 * * *', async () => {
   console.log('[CRON] Running daily referral hold release...');
   try {
     const now = new Date();

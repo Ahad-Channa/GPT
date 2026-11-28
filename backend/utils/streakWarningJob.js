@@ -1,4 +1,4 @@
-const cron = require('node-cron');
+const { scheduleCron } = require('./cronSchedule');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const notify = require('./notify');
@@ -20,7 +20,7 @@ function todayUtcMidnight(date) {
 }
 
 // Run every hour at the top of the hour
-cron.schedule('0 * * * *', async () => {
+scheduleCron('0 * * * *', async () => {
   try {
     const now = new Date();
     const todayStart     = todayUtcMidnight(now);

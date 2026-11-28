@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const cron = require('node-cron');
+const { scheduleCron } = require('./utils/cronSchedule');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -123,7 +123,7 @@ require('./utils/earningHoldJob');
 
 
 // Daily: every day at midnight UTC
-cron.schedule('0 0 * * *', async () => {
+scheduleCron('0 0 * * *', async () => {
   console.log('[CRON] Running daily leaderboard reset...');
   try {
     const result = await resetLeaderboard('daily');
@@ -134,7 +134,7 @@ cron.schedule('0 0 * * *', async () => {
 }, { timezone: 'UTC' });
 
 // Weekly: every Monday at midnight UTC
-cron.schedule('0 0 * * 1', async () => {
+scheduleCron('0 0 * * 1', async () => {
   console.log('[CRON] Running weekly leaderboard reset...');
   try {
     const result = await resetLeaderboard('weekly');
@@ -145,7 +145,7 @@ cron.schedule('0 0 * * 1', async () => {
 }, { timezone: 'UTC' });
 
 // Monthly: 1st of every month at midnight UTC
-cron.schedule('0 0 1 * *', async () => {
+scheduleCron('0 0 1 * *', async () => {
   console.log('[CRON] Running monthly leaderboard reset...');
   try {
     const result = await resetLeaderboard('monthly');

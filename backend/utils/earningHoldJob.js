@@ -1,4 +1,4 @@
-const cron = require('node-cron');
+const { scheduleCron } = require('./cronSchedule');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const notify = require('./notify');
@@ -194,7 +194,7 @@ const releaseEligibleEarningHolds = async ({
  * where 'holdUntil' <= now, and credits the user.
  */
 if (process.env.NODE_ENV !== 'test') {
-  cron.schedule('0 0 * * *', async () => {
+  scheduleCron('0 0 * * *', async () => {
     console.log('[CRON] Running daily earning hold release...');
     try {
       await releaseEligibleEarningHolds();
