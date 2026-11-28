@@ -70,7 +70,8 @@ test('Settings defaults give Goodpicks order 0 (first) for old config', () => {
   assert.equal(settings.offerwallProviders[0].id, 'goodpicks');
   assert.equal(settings.offerwallProviders[0].order, 0);
   const orders = settings.offerwallProviders.map((p) => p.order);
-  assert.deepEqual(orders, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  // Only Goodpicks + Lootably are defaults now (dummy walls removed 2026-11-28).
+  assert.deepEqual(orders, [0, 1]);
 });
 
 // ─── Backend: routes consume the shared order ─────────────────────────────────

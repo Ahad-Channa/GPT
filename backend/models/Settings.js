@@ -133,17 +133,13 @@ const settingsSchema = new mongoose.Schema(
           }
         }
       ],
+      // Only offerwalls that are really integrated. The 8 design-only walls
+      // (cpx, torox, primeearn, ayet, adtowall, revu, adgem, adscend) were removed
+      // on Harun's request (2026-11-28); add a real one back here and in
+      // getSingleton's stdProviders when it is integrated.
       default: [
         { id: 'goodpicks', label: 'Goodpicks', enabled: true, conversionRatio: 100, secretConfigured: false, order: 0, category: 'gaming' },
         { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, order: 1, category: 'mixed', placementId: process.env.LOOTABLY_PLACEMENT_ID || '', iframeUrl: process.env.LOOTABLY_IFRAME_URL || '', offerwallUrl: process.env.LOOTABLY_OFFERWALL_URL || '' },
-        { id: 'primeearn', label: 'Prime Surveys', enabled: true, conversionRatio: 100, secretConfigured: false, order: 2, category: 'surveys' },
-        { id: 'torox', label: 'Torox', enabled: true, conversionRatio: 100, secretConfigured: false, order: 3, category: 'gaming' },
-        { id: 'revu', label: 'Revu', enabled: true, conversionRatio: 100, secretConfigured: false, order: 4, category: 'mixed' },
-        { id: 'adtowall', label: 'AdToWall', enabled: true, conversionRatio: 100, secretConfigured: false, order: 5, category: 'mixed' },
-        { id: 'cpx', label: 'CPX Research', enabled: true, conversionRatio: 100, secretConfigured: false, order: 6, category: 'surveys' },
-        { id: 'adgem', label: 'AdGem', enabled: true, conversionRatio: 100, secretConfigured: false, order: 7, category: 'gaming' },
-        { id: 'ayet', label: 'Ayet Studios', enabled: true, conversionRatio: 100, secretConfigured: false, order: 8, category: 'mixed' },
-        { id: 'adscend', label: 'AdscendMedia', enabled: true, conversionRatio: 100, secretConfigured: false, order: 9, category: 'surveys' },
       ]
     },
     // Block D — Leaderboard Configuration
@@ -212,17 +208,10 @@ settingsSchema.statics.getSingleton = async function () {
   if (!settings) {
     settings = await this.create({ _singleton: 'platform_settings' });
   } else if (settings.offerwallProviders) {
+    // Re-added on every load if missing, so keep this list to real offerwalls only.
     const stdProviders = [
       { id: 'goodpicks', label: 'Goodpicks', enabled: true, conversionRatio: 100, secretConfigured: false, order: 0, category: 'gaming' },
       { id: 'lootably', label: 'Lootably', enabled: true, conversionRatio: 100, secretConfigured: false, order: 1, category: 'mixed', placementId: process.env.LOOTABLY_PLACEMENT_ID || '', iframeUrl: process.env.LOOTABLY_IFRAME_URL || '', offerwallUrl: process.env.LOOTABLY_OFFERWALL_URL || '' },
-      { id: 'primeearn', label: 'Prime Surveys', enabled: true, conversionRatio: 100, secretConfigured: false, order: 2, category: 'surveys' },
-      { id: 'torox', label: 'Torox', enabled: true, conversionRatio: 100, secretConfigured: false, order: 3, category: 'gaming' },
-      { id: 'revu', label: 'Revu', enabled: true, conversionRatio: 100, secretConfigured: false, order: 4, category: 'mixed' },
-      { id: 'adtowall', label: 'AdToWall', enabled: true, conversionRatio: 100, secretConfigured: false, order: 5, category: 'mixed' },
-      { id: 'cpx', label: 'CPX Research', enabled: true, conversionRatio: 100, secretConfigured: false, order: 6, category: 'surveys' },
-      { id: 'adgem', label: 'AdGem', enabled: true, conversionRatio: 100, secretConfigured: false, order: 7, category: 'gaming' },
-      { id: 'ayet', label: 'Ayet Studios', enabled: true, conversionRatio: 100, secretConfigured: false, order: 8, category: 'mixed' },
-      { id: 'adscend', label: 'AdscendMedia', enabled: true, conversionRatio: 100, secretConfigured: false, order: 9, category: 'surveys' },
     ];
     let modified = false;
     for (const p of stdProviders) {

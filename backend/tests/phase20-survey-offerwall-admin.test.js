@@ -19,23 +19,22 @@ const compact = (source) => source.replace(/\s+/g, '');
 
 const providerOrderUrl = pathToFileURL(path.join(repoRoot, 'frontend/src/utils/providerOrder.js')).href;
 
-// ─── Adscend becomes a first-class registry provider ──────────────────────────
+// ─── Only really integrated offerwalls exist (dummy walls removed 2026-11-28) ──
 
-test('Settings defaults include AdscendMedia as an enabled surveys provider, last in order', () => {
+const DUMMY_IDS = ['cpx', 'torox', 'primeearn', 'ayet', 'adtowall', 'revu', 'adgem', 'adscend'];
+
+test('Settings defaults contain only Goodpicks and Lootably (design-only offerwalls removed)', () => {
   const settings = new Settings();
-  const adscend = settings.offerwallProviders.find((p) => p.id === 'adscend');
-  assert.ok(adscend, 'adscend must exist in default settings');
-  assert.equal(adscend.label, 'AdscendMedia');
-  assert.equal(adscend.category, 'surveys');
-  assert.equal(adscend.enabled, true);
   const ids = settings.offerwallProviders.map((p) => p.id);
-  assert.equal(ids[ids.length - 1], 'adscend');
+  assert.deepEqual(ids, ['goodpicks', 'lootably']);
   assert.equal(new Set(ids).size, ids.length, 'no duplicate provider ids');
 });
 
-test('getSingleton seeds Adscend once via the existing duplicate guard', () => {
+test('getSingleton backfill no longer re-adds the dummy offerwalls', () => {
   const source = read('backend/models/Settings.js');
-  assert.match(source, /id:\s*'adscend'/);
+  for (const id of DUMMY_IDS) assert.doesNotMatch(source, new RegExp(`id:\\s*'${id}'`), id);
+  assert.match(source, /id:\s*'goodpicks'/);
+  assert.match(source, /id:\s*'lootably'/);
   assert.match(source, /!settings\.offerwallProviders\.some\(existing\s*=>\s*existing\.id === p\.id\)/);
   assert.match(source, /ensureOfferwallOrder\(settings\.offerwallProviders\)/);
 });

@@ -55,6 +55,6 @@ test('getSingleton never writes coinsPerUSD', () => {
 
 test('provider default ratios are unchanged at 100 (no rates invented)', () => {
   const providers = new Settings({}).offerwallProviders;
-  assert.ok(providers.length >= 10);
+  assert.ok(providers.length >= 2); // Goodpicks + Lootably (dummy walls removed)
   for (const provider of providers) assert.equal(provider.conversionRatio, 100);
 });
