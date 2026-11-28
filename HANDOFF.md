@@ -1,6 +1,6 @@
 # TaskMint: project handoff (for a new Claude chat or a new developer)
 
-Read this first, then continue. Last updated 2026-11-27 (office, evening): staging tests of `0138cbb` + `b29ed0d` all passed (Conversions filters now apply while typing); before that negative balance, chargeback notification with offer name, Conversions user filter, coin sound (`0138cbb`); before that Click Logs chargeback `e2b7b70`, chargeback/hold-release wallet fix `9fb9da2`, direct-offer test mode `6721d5f`. All pushed on `merge-main-test`. Office worktree path: C:/Users/farrukh.saleeem/Documents/GitHub/GPT-merge-test. **The newest state is in the last section: "Session of 2026-11-27". The frontend rule from "Session of 2026-11-26" still applies (main's design wins).**
+Read this first, then continue. Last updated 2026-11-28 (home, late): Live Feed bonus/withdrawal chips + real time, withdrawal privacy fix, logo (snapping reverted), Goodpicks only under Gaming, dummy offerwalls deleted, Featured cards no longer move on page scroll, kaching sound added (`06e6fa3` .. `02b6a5a`, see "Session of 2026-11-28" at the end, read it first). Before that, 2026-11-27 (office, evening): staging tests of `0138cbb` + `b29ed0d` all passed (Conversions filters now apply while typing); before that negative balance, chargeback notification with offer name, Conversions user filter, coin sound (`0138cbb`); before that Click Logs chargeback `e2b7b70`, chargeback/hold-release wallet fix `9fb9da2`, direct-offer test mode `6721d5f`. All pushed on `merge-main-test`. Office worktree path: C:/Users/farrukh.saleeem/Documents/GitHub/GPT-merge-test. **The newest state is in the last section: "Session of 2026-11-27". The frontend rule from "Session of 2026-11-26" still applies (main's design wins).**
 
 ## Project
 - TaskMint: rewards/offerwall site. Frontend `frontend/` (React + Vite), backend `backend/` (Node/Express + MongoDB).
@@ -315,6 +315,59 @@ All work is on `merge-main-test` (worktree `C:\Users\farru\Documents\GitHub\GPT-
 0. Deploy the chargeback fix on staging, then run the Lootably simulation (credit, then chargeback; once with a held reward) and check wallet, VIP progress, daily bonus, notification and sound.
 1. Send Harun the German summary of `0138cbb` / `b29ed0d` and ask him to retest on staging.
 2. Open from before: disable dummy offerwalls (Admin -> Offerwalls, keep Goodpicks and Lootably); remove the admin "Featured Offers" section (waiting for the user's "kar do"); Lootably real-offer test; VIP claim double-request race (offered, not approved); new features (spin/packs/album) only after scope and payment are agreed.
+
+## Session of 2026-11-28 (LATEST: read this first)
+
+All on `merge-main-test` (worktree `C:\Users\farru\Documents\GitHub\GPT-merge-test`), pushed. `origin/merge-main-test` = `c7ce25a`. Staging deploy state unknown: check `git log --oneline -1` on the server.
+
+### Answers given to Harun (code verified, no change)
+- Everything (daily bonus progress, VIP progress, leaderboard, affiliate commission, bonus-code 7-day rule, Live Feed, coin sound, chargeback notice) uses `REAL_OFFER_EARNING_TYPES` = offerwall (`offer_reward`) + Goodpicks/direct + custom, so offerwall and Goodpicks count the same. Bonuses themselves never count.
+- Held earnings count for leaderboard (statuses completed+hold) and VIP (`totalEarned` grows at credit, also when held).
+- Leaderboard and chargeback: a reward counts in the period it was earned; on chargeback its tx becomes `reversed` and drops out of running daily/weekly/monthly rankings. Prizes already paid (period closed) stay. Harun decided: **no automatic take-back of leaderboard prizes**, and **admin adjustments stay in the feed as "Bonus"**.
+
+### 1. `06e6fa3` Live Feed bonus chips + mouse drag
+- `getBonusFeedDisplay` (`frontend/src/utils/earningDisplay.js`): Leaderboard / "Place N" (rank from metadata or description "Rank #N"), Daily Bonus / "Day N" (from "Streak: N"), VIP / level (from "VIP Bonus — Bronze I" or metadata tier+rank), "Bonus Code", "Affiliate Earnings", "Mission", "Bonus" (admin adjustment). No hover popup for these. English labels like the offer chips.
+- `referral_reward` added to the public feed. `LiveEarningsBar.jsx`: desktop mouse drag scrolls the feed (pointer events, a drag does not open the profile); touch already swiped; older items load at the end.
+
+### 2. `0fc357b` Withdrawal chips + privacy fix
+- Chip shows only the payout name: Litecoin / PayPal / gift-card brand from `metadata.brand` (e.g. Amazon; old rows "Gift Card") / "Book"; hover only for books (book title). Harun wrote "Buch"; we used "Book" (ask if he wants German).
+- **Privacy fix:** the public feed now sends withdrawals through `sanitizePublicWithdrawal` (`backend/utils/earningFeed.js`): only method, gift-card brand and book title. `main` does not have this yet; include it in the go-live (Harun was asked whether to bring it to main earlier on its own). Details in the chat history, not here.
+
+### 3. Desktop logo blur (`cce9cbb`, `70deba1`, `bb63d6a`)
+- First two attempts were wrong (removing a `rotate(0deg)` layer, then a 0.3 stroke on the wordmark; stroke reverted). Real cause, measured in headless Chrome on the real staging page via CDP: the logged-out Landing page has its own logo in `Landing.jsx`, drawn at `height=28.53` (98% of the 29 viewBox) at `y=25.73`. Fix: desktop logo box 161x30 with `viewBox 0 0 161 30` (logo 1:1 at y=25); logged-in Header logo group 29px. Measured gain is modest (~6% more solid pixels). Remaining softness is normal SVG anti-aliasing at 29px on 1x screens; options for Harun: bigger logo (e.g. 34px) or a screen-optimised logo from his designer; also ask about Windows display scaling. A Poppins text version was tested and rejected (shapes differ, colour fringes). Scratch tooling: `scratchpad/logo/cdp.js` (CDP screenshot + computed styles), not in the repo.
+
+### 4. `c7ce25a` Real-time Live Feed for everything + offerwall sections
+- One rule in `earningFeed.js`: `FEED_EARNING_TYPES` (offers + daily_bonus, admin_adjustment, promo_code, leaderboard_reward, vip_reward, referral_reward; completed/hold, amount > 0, not testOffer) and withdrawals (pending/completed, always sanitized). Used by both the REST feed and `buildNewEarningPayload`/`broadcastNewEarning`.
+- Broadcast added after: daily bonus, promo code, withdrawal (`wallet.js`), VIP claim (`vip.js`), book order (`books.js`), admin adjustment (positive only), custom-offer referral commissions (2 places in `admin.js`), offerwall referral + signup bonus (`offerwalls.js`), Goodpicks/direct referral (`rewardService.js` side effects, referrer loaded by id). Leaderboard's own partial `io.emit` replaced by the shared broadcast.
+- Offerwalls: `buildOfferwallSections` (`frontend/src/utils/providerOrder.js`) no longer adds Goodpicks to Surveys (Gaming & App only). Home hides the Surveys section + filter tab and Earn hides the Surveys tab (opens Gaming) when no survey wall is enabled. Admin Surveys tab unchanged (ordering only).
+- **Manual step for the user:** in Admin -> Offerwalls (staging and later taskmint.me) disable CPX, Torox, Prime Surveys, Ayet, AdToWall, RevU, AdGem, AscendMedia (adscend); keep Goodpicks and Lootably.
+- Updated old tests that pinned the previous rules (phase13, phase20 Goodpicks-in-Surveys; phase34 "withdrawal never broadcast"). New tests: `backend/tests/phase45-live-feed-withdrawal-privacy.test.js`, `frontend/tests/live-feed-bonus-chips.test.js`.
+
+### 5. Later on 2026-11-28: logo snapping reverted, coin sound file, dummy offerwalls deleted
+- `4867004` rounded the desktop logo path coordinates to whole pixels ("hinting"); it looked sharper only at exactly 100% zoom and distorted letters on zoomed/scaled screens. **Reverted in `b9c9648`**: original paths everywhere (shared in `frontend/src/components/brand/logoPaths.js`); the 1:1 whole-pixel placement from `bb63d6a` stays. Do not try more code tricks: offered Harun a bigger logo (34-36px) or a screen-optimised logo from his designer.
+- Coin sound (`4867004`, kept): `playCoinSound` plays `/sounds/coin.mp3`, falls back to the old synthesized tone. **`02b6a5a` added the MP3**: `frontend/public/sounds/coin.mp3` = Pixabay "Cash Register (Kaching) - Sound Effect" by Modestas123123 (id 125042, 3 s, ~100 KB, Pixabay Content License). Downloaded via headless Chrome (pixabay.com blocks curl; the cdn URL itself is fine). Sound plays only for `offer_reward`, `direct_offer_reward`, `custom_offer_approved` notifications (confirmed with Harun).
+- Admin has two pages: **Offerwalls** (ON/OFF per wall, drives the Earn page via `settings.offerwallProviders[].enabled`) and **Providers** (`provider-configs`, postback secrets only, no effect on Earn). Harun switched the dummies OFF himself.
+- `2557e78`: the 8 design-only offerwalls (cpx, torox, primeearn, ayet, adtowall, revu, adgem, adscend) are removed from `Settings.js` defaults and from `getSingleton`'s backfill (which re-adds missing ids on every load). Existing DBs: run once `node backend/scripts/remove-dummy-offerwalls.js` (dry run) then `--yes` ($pull of those 8 ids only). Staging: pending; taskmint.me: at go-live. Postback routes/adapters and frontend logo maps were left untouched. To add a real wall later: put it back in the schema default + `stdProviders`, then integrate its adapter. Test `phase46-remove-dummy-offerwalls.test.js`; backend 633 / 629 pass / 4 fail (pre-existing); frontend 98 / 94 / 4.
+- Fiverr order: Harun asked to extend by 1 week (the user does it on Fiverr).
+- `f283ec3`: Home "Featured Offers" row had a wheel handler (also on main) that turned vertical wheel scrolling into sideways card movement; removed. The row still moves by mouse drag, trackpad swipe or Shift+wheel; lazy loading stays on `onScroll`. The Live Feed bar keeps its wheel-to-sideways scrolling (Harun asked for feed scrolling).
+- Harun (good night message): he will test everything on staging tomorrow, then the work should go to taskmint.me. He thinks spin/packs/album will be quick; scope and price are still not agreed (no coding before that).
+- Tests after `02b6a5a`: backend 633 / 629 pass / 4 fail; frontend 100 / 96 pass / 4 fail (all pre-existing); build ok.
+
+### Test totals (after `c7ce25a`)
+- Backend 629: 625 pass, 4 fail (pre-existing: offerwall provider name, admin USD form, reward/wallet untouched, frontend direct-offer start URLs).
+- Frontend 97: 93 pass, 4 fail (pre-existing: locale registry, 2x Add Goal render, goal label/description). Build ok.
+
+### Coin sound
+- The current sound is synthesized (one sine tone in `playCoinSound`, `frontend/src/contexts/NotificationContext.jsx`), not a file. Harun wants a real "kaching". Suggested free sources: Pixabay sound effects, Mixkit. When Harun/user provides an MP3: put it in `frontend/public/sounds/coin.mp3`, play it with `new Audio`, keep the synth as fallback.
+
+### Fiverr order
+- Order has about 1 day left (2026-11-28). The user is asking Harun whether to extend again, what is still open, and for how many days (German message drafted in chat).
+
+### Next steps
+1. User deploys `02b6a5a` on staging (backend restart + frontend build) and runs `node scripts/remove-dummy-offerwalls.js` (dry run) then `--yes` in `backend/`.
+2. Harun tests everything on staging and sends a list; fix it on `merge-main-test`.
+3. Then plan the go-live to taskmint.me (`main`): only our reviewed work, main's design wins, never a whole-branch overwrite; include the withdrawal privacy fix and run the dummy-offerwall script on the live DB.
+4. Still open: Lootably simulation test (section 9 of 2026-11-27), remove admin "Featured Offers" section (waiting for "kar do"), VIP claim race, new features only after scope/payment.
 
 ## Working rules used in this project
 - Commit and push tested work to the working branch (`merge-main-test`) without waiting to be asked (user, 2026-11-26). Never push to `main` without an explicit go-ahead. Server deploys are run by the user.
